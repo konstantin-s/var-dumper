@@ -784,6 +784,25 @@ EOHTML
         }
         $line .= 'pre.sf-dump .sf-dump-ellipsis-note{'.$this->styles['note'].'}';
 
+        $idelinksByXHR = <<<HTML
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  Array.from(document.querySelectorAll('a.by_xhr')).forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault()
+      let xhr = new XMLHttpRequest()
+      xhr.open('GET', a.href)
+      xhr.send()
+    })
+  })
+
+})
+</script>
+HTML;
+
+        $this->dumpHeader .= $idelinksByXHR;
+
         return $this->dumpHeader = preg_replace('/\s+/', ' ', $line).'</style>'.$this->dumpHeader;
     }
 
@@ -934,7 +953,13 @@ EOHTML
         }
         if (isset($attr['href'])) {
             $target = isset($attr['file']) ? '' : ' target="_blank"';
-            $v = sprintf('<a href="%s"%s rel="noopener noreferrer">%s</a>', esc($this->utf8Encode($attr['href'])), $target, $v);
+
+            $class = '';
+            if (strstr($attr['href'], 'api/file/') !== false) {
+                $class = 'by_xhr';
+            }
+
+            $v = sprintf('<a href="%s"%s rel="noopener noreferrer" class="%s">%s</a>', esc($this->utf8Encode($attr['href'])), $target, $class, $v);
         }
         if (isset($attr['lang'])) {
             $v = sprintf('<code class="%s">%s</code>', esc($attr['lang']), $v);
